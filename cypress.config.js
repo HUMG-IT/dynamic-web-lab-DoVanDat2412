@@ -12,6 +12,13 @@ module.exports = defineConfig({
     screenshotsFolder: "cypress/screenshots", // Đặt thư mục lưu ảnh chụp khi kiểm thử thất bại
     viewportWidth: 1280, // Đặt kích thước chiều rộng viewport
     viewportHeight: 720, // Đặt kích thước chiều cao viewport
-    browser: "chrome" // Sử dụng Chrome thay vì Electron
+    browser: "chrome", // Sử dụng Chrome thay vì Electron
+  },
+
+  component: {
+    devServer: {
+      framework: "create-react-app",
+      bundler: "webpack",
+    },
   },
 });

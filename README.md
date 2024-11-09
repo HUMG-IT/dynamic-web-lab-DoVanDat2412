@@ -291,7 +291,158 @@ Nếu hiện phiên bản mà không báo lỗi thì đã cài đặt thành cô
 - Truy cập vào http://localhost:3000 để xem ứng dụng
 
 ### Bước 4: Mở rộng ứng dụng
-Nâng cấp mã của ứng dụng này để cho phép Tính chỉ số BMI trực tuyến.
+I.Nâng cấp mã của ứng dụng này để cho phép Tính chỉ số BMI trực tuyến.
+1. (Fronten) truy cập vào thư mục public/index.html bổ sung tính chỉ số (chiều cao , cân nặng ) và gửi dữ liệu tới client 
+```
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Web động - Lưu Tên và Tính BMI</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <h1>Ứng dụng Web động với Node.js và Express</h1>
+
+    <!-- Form Lưu Tên -->
+    <section>
+        <h2>Lưu tên</h2>
+        <form id="nameForm">
+            <label for="name">Tên:</label>
+            <input type="text" id="name" name="name" required>
+            <button type="submit">Gửi tên</button>
+        </form>
+        <p id="nameResponse"></p>
+    </section>
+    <section>
+
+    <h1>Tính chỉ số BMI</h1>
+        <form id ="bmiForm">
+            <label for="height">Chiều cao (cm) : </label>
+            <input type="number" id="height" name="height" required> 
+            <label for="weight">Cân nặng(kg):</label>
+            <input type="number" id="weight" name="weight" required>
+            <button type="submit"> Tính BMI</button>
+            
+        </form>
+        <p id = "bmiResult"></p>
+    <!-- Form Tính BMI -->
+    <!-- TODO: Tạo một section mới với tiêu đề "Tính chỉ số BMI" -->
+    <!-- TODO: Tạo form với id là "bmiForm" -->
+    <!-- TODO: Thêm input cho chiều cao -->
+    <!-- TODO: Thêm input cho cân nặng -->
+    <!-- TODO: Thêm nút submit để tính BMI -->
+    <!-- TODO: Thêm một phần tử <p> với id là "bmiResult" để hiển thị kết quả -->
+    </section>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
+```
+2.(Backend) Lấy giá trị chiều cao và cân nặng từ các trường tương ứng, sau đó gửi chúng đến server qua route /api/v1/bmi.
+Sau khi nhận phản hồi từ server, hiển thị chỉ số BMI và phân loại trong phần tử id='bmiResult'.
+- truy cập vào public/script.js để bổ sung câu lệnh truyền dữ liệu giữa cliend tới server và ngược lại 
+```
+// Form lưu tên
+document.getElementById('nameForm').addEventListener('submit', async function (e) {
+    // Ngăn hành vi mặc định của form (ngăn tải lại trang)
+    e.preventDefault();
+
+    // Lấy giá trị nhập từ trường input có id là 'name'
+    const name = document.getElementById('name').value;
+
+    // Gửi yêu cầu POST đến server tại route '/submit' với dữ liệu JSON
+    const response = await fetch('/api/v1/submit', {
+        method: 'POST',  // Sử dụng phương thức POST để gửi dữ liệu
+        headers: {
+            'Content-Type': 'application/json',  // Định nghĩa kiểu nội dung gửi là JSON
+        },
+        body: JSON.stringify({ name: name }),  // Chuyển đổi đối tượng { name: name } thành chuỗi JSON
+    });
+
+    // Chờ phản hồi từ server và chuyển đổi phản hồi từ JSON thành đối tượng JavaScript
+    const data = await response.json();
+
+    // Hiển thị thông điệp trả về từ server trong phần tử có id là 'nameResponse'
+    document.getElementById('nameResponse').textContent = `${data.message}. Danh sách tên: ${data.names.join(', ')}`;
+});
+
+// Form tính BMI
+document.getElementById('bmiForm').addEventListener('submit', async function (e) {
+    // Ngăn hành vi mặc định của form (ngăn tải lại trang)
+    e.preventDefault();
+
+    // Lấy giá trị chiều cao, cân nặng nhập từ form
+    const height = parseFloat(document.getElementById('height').value);
+    const weight = parseFloat(document.getElementById('weight').value);
+
+    // Gửi yêu cầu POST đến server tại route '/bmi' với dữ liệu JSON
+    const response = await fetch('/api/v1/bmi', {
+        method: 'POST',  // Sử dụng phương thức POST để gửi dữ liệu
+        headers: {
+            'Content-Type': 'application/json',  // Định nghĩa kiểu nội dung gửi là JSON
+        },
+        body: JSON.stringify({ height, weight }),  // Chuyển đổi đối tượng thành chuỗi JSON
+    });
+
+    // Chờ phản hồi từ server và chuyển đổi phản hồi từ JSON thành đối tượng JavaScript
+    const data = await response.json();
+
+    // Hiển thị thông điệp trả về từ server trong phần tử có id là 'bmiResult'
+    document.getElementById('bmiResult').textContent = `BMI của bạn là: ${parseFloat(data.bmi).toFixed(2)}, Phân loại: ${data.classification}`;
+});
+```
+
+- truy cập vào src/app.js để bổ sung câu lệnh nhận dữ liệu từ phía cliend vào server sử lí và trả kết quả sang phía cliend
+```const express = require('express');
+const path = require('path');
+
+const app = express();
+const port = 3000;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Import routes
+const apiRoutes = require('./routes/api');
+app.use('/api/v1', apiRoutes);
+
+// code 
+app.post('/api/v1/bmi',(req , res) => {
+  const{height , weight } = req.body ; 
+  // chuyển chiều cao tu cm thành m 
+  const heightInMeters = height / 100  ; 
+  //tinh BMI
+  const bmi = weight / (heightInMeters ** 2) ; 
+  // Phân loại BMI
+  let classification = '' ; 
+  if (bmi < 18.5){
+    classification = 'Gầy' ; 
+  }else if (bmi >= 18.5 && bmi <= 24.9 ){
+    classification = 'Bình thường' ; 
+  }else if (bmi >= 25 && bmi <= 29.9 ){
+    classification = 'Thừa cân' ; 
+  }else {
+    classification = 'Béo phì' ; 
+  }
+  // trả về kết quả BMI và phân loại 
+  res.json({
+    bmi: bmi.toFixed(2), // làm tròn BMI với 2 số thập phân 
+    classification: classification
+  })
+})
+app.listen(port, () => {
+  console.log(`Server đang chạy ở cổng ${port}`);
+  console.log(`Truy cập vào http://localhost:${port} để xem ứng dụng`);
+});
+```
+
+
+
 
 #### Gợi ý cách thực hiện
 1. **Frontend**: Bổ sung form Tính chỉ số BMI (cho phép nhập chiều cao, cân nặng) và gửi dữ liệu này đến server.
