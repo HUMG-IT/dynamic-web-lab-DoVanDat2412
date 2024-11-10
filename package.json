@@ -5,7 +5,8 @@
  "scripts": {
   "prestart": "echo No prestart action" ,
   "start": "node src/app.js",
-  "test": "cypress open",
+   "cy:run": "cypress run",
+  "test": "npm start & npm run cy:run" ,
   "cypress:run": "npx wait-on http://localhost:3000 && cypress run",
   "test:e2e": "npm run start & npm run cypress:run"
 },
