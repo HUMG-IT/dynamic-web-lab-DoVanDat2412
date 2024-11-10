@@ -8,7 +8,8 @@
    "cy:run": "cypress run",
   "test": "npm start & npm run cy:run" ,
   "cypress:run": "npx wait-on http://localhost:3000 && cypress run",
-  "test:e2e": "npm run start & npx wait-on -t 10000 http://localhost:3000 && cypress run"
+ "test:e2e": "npm run start & npx wait-on -t 20000 http://localhost:3000 && cypress run"
+
 
 },
   "keywords": [],
